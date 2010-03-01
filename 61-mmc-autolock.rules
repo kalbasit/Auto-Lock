@@ -1,0 +1,3 @@
+# Add/Remove MMC devices, will run udev-autolock to lock/unlock the PC
+ACTION=="add", KERNEL=="mmcblk[0-9]", SUBSYSTEMS=="mmc", RUN+="/usr/local/sbin/udev-autolock.sh add %k"
+ACTION=="remove", KERNEL=="mmc[0-9]*", SUBSYSTEMS=="mmc", RUN+="/usr/local/sbin/udev-autolock.sh remove %k"

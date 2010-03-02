@@ -47,6 +47,15 @@ DEVICE="/dev/${2}"
 
 function lockDown()
 {
+	# Lock X
+	lockX
+
+	# pause Mpd
+	pauseMpd
+}
+
+function lockX()
+{
 	for USER in ${USERS[@]}; do
 		# Get the PID of the running lockDown
 		userId="$(id -u ${USER})"
@@ -65,7 +74,27 @@ function lockDown()
 	done
 }
 
+function pauseMpd()
+{
+	if mpc -h "${MPD_HOST}" -p "${MPD_PORT}" | grep -q '^\[playing\]'; then
+		mpc -h "${MPD_HOST}" -p "${MPD_PORT}" pause
+
+		rm -f /var/run/udev-autolock.mpd
+
+		echo "MPD PAUSED" > /var/run/udev-autolock.mpd
+	fi
+}
+
 function unlockDown()
+{
+	# Unlock X
+	unlockX
+
+	# play Mpd
+	playMpd
+}
+
+function unlockX()
 {
 	for USER in ${USERS[@]}; do
 		# Get the PID of the running lockDown
@@ -76,6 +105,17 @@ function unlockDown()
 			kill -9 "${PID}" > /dev/null 2>&1
 		fi
 	done
+
+}
+
+function playMpd() {
+	if [ -f /var/run/udev-autolock.mpd ]; then
+		if [ "`cat /var/run/udev-autolock.mpd`" = "MPD PAUSED" ]; then
+			mpc -h "${MPD_HOST}" -p "${MPD_PORT}" play
+		fi
+
+		rm -f /var/run/udev-autolock.mpd
+	fi
 }
 
 #
